@@ -1,0 +1,25 @@
+{
+  "name": "story-inscriptions-explorer",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "type": "module",
+  "dependencies": {
+    "@vueuse/core": "^10.5.0",
+    "alchemy-sdk": "^2.10.1",
+    "dotenv": "^16.3.1",
+    "markdown-it": "^13.0.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
+    "prettier": "^3.0.3",
+    "vite": "^4.4.11"
+  }
+}
