@@ -48,7 +48,11 @@ document.title = nft.title ? nft.title : '#' + nft.tokenId
   </div>
   <div class="storiesCol">
     <h2>
-      Story Inscriptions <a href="/somewhere"><IconHelp /></a>
+      Story Inscriptions
+      <a
+        href="https://mirror.xyz/nix.eth/iirpluo1wtO5-yn62heVuQYw8BJKiu3bADED1DW0Cws"
+        ><IconHelp
+      /></a>
     </h2>
     <Suspense timeout="0">
       <template #default>

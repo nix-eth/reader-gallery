@@ -30,7 +30,10 @@ const errorStore = useErrorStore()
   </div>
   <footer id="footer">
     <div class="icons">
-      <a href="/somehelp"><IconHelp /></a>
+      <a
+        href="https://mirror.xyz/nix.eth/iirpluo1wtO5-yn62heVuQYw8BJKiu3bADED1DW0Cws"
+        ><IconHelp
+      /></a>
       <a @click="toggleDark()"><IconLightDark /></a>
     </div>
     <span>

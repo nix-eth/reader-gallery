@@ -35,7 +35,11 @@ document.title = collection.name ? collection.name : collection.address
   </h1>
 
   <h2>
-    Newest Story Inscriptions <a href="/somewhere"><IconHelp /></a>
+    Newest Story Inscriptions
+    <a
+      href="https://mirror.xyz/nix.eth/iirpluo1wtO5-yn62heVuQYw8BJKiu3bADED1DW0Cws"
+      ><IconHelp
+    /></a>
   </h2>
   <Suspense timeout="0">
     <template #default>

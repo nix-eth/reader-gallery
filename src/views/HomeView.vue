@@ -25,7 +25,13 @@
           >
         </li>
       </ul>
-      <p>For more details read here:</p>
+      <p>
+        For more details, check out the
+        <a
+          href="https://mirror.xyz/nix.eth/iirpluo1wtO5-yn62heVuQYw8BJKiu3bADED1DW0Cws"
+          >Reader.Gallery Guide</a
+        >
+      </p>
     </div>
     <div class="examples">
       <h3>Notable Examples</h3>
