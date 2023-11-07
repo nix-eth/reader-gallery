@@ -20,11 +20,6 @@ export const rawAlchemy = {
   })
 }
 
-export const rawProvider = {
-  mainnet: await rawAlchemy.mainnet.config.getProvider(),
-  goerli: await rawAlchemy.goerli.config.getProvider()
-}
-
 const explorerUrlTransactionLogTemplate = {
   mainnet: 'https://etherscan.io/tx/%#eventlog',
   goerli: 'https://goerli.etherscan.io/tx/%#eventlog'
@@ -100,7 +95,7 @@ async function _fetchMetadataFromContract(
         type: 'function'
       }
     ],
-    rawProvider[network]
+    await rawAlchemy[network].config.getProvider()
   )
 
   const rawUri = await contract.tokenURI(tokenId)
@@ -238,7 +233,7 @@ async function _collectionSupportsInterface(
         type: 'function'
       }
     ],
-    rawProvider[network]
+    await rawAlchemy[network].config.getProvider()
   )
 
   return contract.supportsInterface(interfaceId)
@@ -407,7 +402,6 @@ export async function getCollection(address, network = 'mainnet') {
 
 export default {
   rawAlchemy,
-  rawProvider,
   getNft,
   getCollection,
   collectionSupportsStories,
