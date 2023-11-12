@@ -8,7 +8,9 @@ const props = defineProps({
 const markdown = new MarkdownIt()
 
 function renderMD(text) {
-  text = text.replaceAll('ipfs://', 'https://ipfs.io/ipfs/')
+  text = text
+    .replaceAll('ipfs://', 'https://ipfs.io/ipfs/')
+    .replaceAll('ar://', 'https://arweave.net/')
   return markdown.render(text)
 }
 </script>
