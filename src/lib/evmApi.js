@@ -135,6 +135,14 @@ export async function getNft(address, tokenId, network = 'mainnet') {
     }
   }
 
+  if (
+    !nftData.media[0].format &&
+    nftData.media[0].gateway &&
+    nftData.media[0].gateway.startsWith('data:image/svg+xml')
+  ) {
+    nftData.media[0].format = 'svg+xml'
+  }
+
   const nft = {
     title: nftData.title,
     description: nftData.description,
