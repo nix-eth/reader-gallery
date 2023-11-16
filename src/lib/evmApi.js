@@ -349,8 +349,17 @@ export async function getCollectionStories(
           : `/${network}/${address}/${data.tokenId}`
     }
 
+    if (
+      data.media[0] &&
+      !data.media[0].format &&
+      data.media[0].gateway &&
+      data.media[0].gateway.startsWith('data:image/svg+xml')
+    ) {
+      data.media[0].format = 'svg+xml'
+    }
+
     const rawMedia = data.media[0]
-    if (rawMedia) {
+    if (rawMedia && rawMedia.format) {
       switch (rawMedia.format) {
         case 'png':
         case 'jpg':
