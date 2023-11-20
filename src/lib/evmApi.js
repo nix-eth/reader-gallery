@@ -310,7 +310,10 @@ export async function getCollectionStories(
   deployedBlock,
   network = 'mainnet'
 ) {
-  const stories = await getNftStories(address, deployedBlock, null, network)
+  let stories = await getNftStories(address, deployedBlock, null, network)
+  if (stories.length > 30) {
+    stories = stories.slice(0, 30)
+  }
   const tokenIds = [...new Set(stories.map((story) => story.tokenId))]
 
   const [nftsData, ownersData] = await Promise.all([
