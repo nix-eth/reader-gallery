@@ -19,7 +19,11 @@ const props = defineProps({
           >
         </div>
         <div class="tag">
-          <span class="creator" v-if="story.type === 'creator'">creator</span>
+          <span
+            class="creator"
+            v-if="story.type === 'creator' || story.type === 'collection'"
+            >creator</span
+          >
           <span
             class="currentOwner"
             v-else-if="story.type === 'owner' && owners.includes(story.address)"
@@ -55,7 +59,8 @@ const props = defineProps({
   background-color: #f6fefa;
   border-color: #43d787;
 }
-.story.creator {
+.story.creator,
+.story.collection {
   background-color: #f5fafd;
   border-color: #0086d6;
 }
@@ -63,7 +68,8 @@ html.dark .story.owner {
   background-color: #101d16;
   border-color: #226c44;
 }
-html.dark .story.creator {
+html.dark .story.creator,
+html.dark .story.collection {
   background-color: #0f181e;
   border-color: #005080;
 }

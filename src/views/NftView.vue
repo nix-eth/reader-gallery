@@ -20,11 +20,11 @@ const nft = await evmApi
   .catch((error) => {
     errorStore.throwError('Error loading NFT', error.message)
   })
-document.title = nft.title ? nft.title : '#' + nft.tokenId
+document.title = nft.name ? nft.name : '#' + nft.tokenId
 </script>
 
 <template>
-  <h1 v-if="nft.title">{{ nft.title }}</h1>
+  <h1 v-if="nft.name">{{ nft.name }}</h1>
   <h1 v-else>#{{ nft.tokenId }}</h1>
   <h2>
     <router-link :to="nft.collection.collectionPath">

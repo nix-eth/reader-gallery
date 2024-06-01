@@ -1,6 +1,6 @@
 {
-  "name": "story-inscriptions-explorer",
-  "version": "0.0.0",
+  "name": "reader-gallery",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
   "type": "module",
   "dependencies": {
     "@vueuse/core": "^10.5.0",
-    "alchemy-sdk": "^2.10.1",
+    "alchemy-sdk": "^3.3.1",
     "dotenv": "^16.3.1",
     "markdown-it": "^13.0.2",
     "pinia": "^2.1.7",

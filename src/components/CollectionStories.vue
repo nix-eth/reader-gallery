@@ -40,12 +40,20 @@ if (supportsStories.value) {
   </div>
   <div
     class="storyWrap"
-    v-for="(story, i) of stories"
+    v-for="story of stories.filter((story) => story.type === 'collection')"
+  >
+    <Story :story="story" />
+  </div>
+  <div
+    class="storyWrap"
+    v-for="(story, i) of stories.filter((story) =>
+      ['creator', 'owner'].includes(story.type)
+    )"
     :set="(isNewNft = i === 0 || stories[i - 1].tokenId !== story.tokenId)"
   >
     <h2 v-if="isNewNft">
       <router-link :to="story.nft.nftPath">
-        <span v-if="story.nft.title">{{ story.nft.title }}</span>
+        <span v-if="story.nft.name">{{ story.nft.name }}</span>
         <span v-else>{{ collection.name }} #{{ story.nft.tokenId }}</span>
       </router-link>
     </h2>

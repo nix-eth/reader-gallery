@@ -17,7 +17,7 @@ const router = createRouter({
       component: NftView
     },
     {
-      path: '/:network(goerli)/:contract/:tokenId(\\d+)',
+      path: '/:network(sepolia|base|base-sepolia)/:contract/:tokenId(\\d+)',
       component: NftView
     },
     {
@@ -25,7 +25,7 @@ const router = createRouter({
       component: CollectionView
     },
     {
-      path: '/:network(goerli)/:contract',
+      path: '/:network(sepolia|base|base-sepolia)/:contract',
       component: CollectionView
     },
     {

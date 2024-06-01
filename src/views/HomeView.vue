@@ -35,22 +35,24 @@
     </div>
     <div class="examples">
       <h3>Notable Examples</h3>
-      <router-link :to="`/0x3A646081026175AcBd0937B35f8aC1c4d314E3C6`"
+
+      <router-link :to="`/0x8e7b93896242299defc4860f3c093dc3ebf90a96/19`"
         ><img
-          src="@/assets/examples/0x3A646081026175AcBd0937B35f8aC1c4d314E3C6.png"
+          src="@/assets/examples/0x8e7b93896242299defc4860f3c093dc3ebf90a96-19.png"
       /></router-link>
-      <router-link :to="`/0xdb6993dfabe6d6b425753b0e5f9f5aa89ac8b9b6/1`"
+      <router-link :to="`/0x8e7b93896242299defc4860f3c093dc3ebf90a96`"
         ><img
-          src="@/assets/examples/0xdb6993dfabe6d6b425753b0e5f9f5aa89ac8b9b6-1.png"
+          src="@/assets/examples/0x8e7b93896242299defc4860f3c093dc3ebf90a96.png"
       /></router-link>
       <router-link :to="`/0x9FcD480f7CDF4Ee6053D1c7C32DD352e257D98f7`"
         ><img
           src="@/assets/examples/0x9FcD480f7CDF4Ee6053D1c7C32DD352e257D98f7.png"
       /></router-link>
-      <router-link :to="`/0x44d504fb4b2aca2c17a9bc5e56dd002f6032333f/10`"
+      <router-link :to="`/0xdb6993dfabe6d6b425753b0e5f9f5aa89ac8b9b6/1`"
         ><img
-          src="@/assets/examples/0x44d504fb4b2aca2c17a9bc5e56dd002f6032333f-10.png"
+          src="@/assets/examples/0xdb6993dfabe6d6b425753b0e5f9f5aa89ac8b9b6-1.png"
       /></router-link>
+
       <router-link :to="`/0x89a361a2ff4db6c065a7745a2543e5a54f335aff/2`"
         ><img
           src="@/assets/examples/0x89a361a2ff4db6c065a7745a2543e5a54f335aff-2.png"
@@ -58,10 +60,6 @@
       <router-link :to="`/0x5987CB4f9DB9a1765FD3F4A824D585EC01314dbe`"
         ><img
           src="@/assets/examples/0x5987CB4f9DB9a1765FD3F4A824D585EC01314dbe.png"
-      /></router-link>
-      <router-link :to="`/0xb18341ed8a5405a6d3663a1382c1f3fec0d6e349/1`"
-        ><img
-          src="@/assets/examples/0xb18341ed8a5405a6d3663a1382c1f3fec0d6e349-1.png"
       /></router-link>
     </div>
   </div>

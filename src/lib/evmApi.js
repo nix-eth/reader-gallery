@@ -4,6 +4,8 @@ const CREATOR_STORY_TOPIC =
   '0x5c0564b4237730adb947143019acb5addfdbf1be3ad1edf72e24a8f9d02fd2c1'
 const OWNER_STORY_TOPIC =
   '0x40ebea9c3c7603a5d233a0bec01e483338737b6bed01bed2ac09ccbaa3d4b7ac'
+const COLLECTION_STORY_TOPIC =
+  '0x2e88f428bf841b9abdc4c8d098cebae9a254b846c942a7fe0abf4963cf91ed96'
 
 if (import.meta.env.VITE_ALCHEMY_API_KEY === undefined) {
   throw new Error('Missing required Alchemy key')
@@ -14,36 +16,54 @@ export const rawAlchemy = {
     apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
     network: Network.ETH_MAINNET
   }),
-  goerli: new Alchemy({
+  sepolia: new Alchemy({
     apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
-    network: Network.ETH_GOERLI
+    network: Network.ETH_SEPOLIA
+  }),
+  base: new Alchemy({
+    apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
+    network: Network.BASE_MAINNET
+  }),
+  'base-sepolia': new Alchemy({
+    apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
+    network: Network.BASE_SEPOLIA
   })
 }
 
 const explorerUrlTransactionLogTemplate = {
   mainnet: 'https://etherscan.io/tx/%#eventlog',
-  goerli: 'https://goerli.etherscan.io/tx/%#eventlog'
+  sepolia: 'https://sepolia.etherscan.io/tx/%#eventlog',
+  'base-sepolia': 'https://sepolia.basescan.org/tx/%#eventlog',
+  base: 'https://basescan.org/tx/%#eventlog'
 }
 
 const profileUrlTemplate = {
   mainnet: 'https://opensea.io/%',
-  goerli: 'https://testnets.opensea.io/%'
+  sepolia: 'https://testnets.opensea.io/%',
+  'base-sepolia': 'https://testnets.opensea.io/%',
+  base: 'https://opensea.io/%'
 }
 
 const openseaNftUrlTemplate = {
   mainnet: 'https://opensea.io/assets/ethereum/%',
-  goerli: 'https://testnets.opensea.io/assets/goerli/%'
+  sepolia: 'https://testnets.opensea.io/assets/sepolia/%',
+  'base-sepolia': 'https://testnets.opensea.io/assets/base-sepolia/%',
+  base: 'https://opensea.io/assets/base/%'
 }
 const openseaCollectionUrlTemplate = openseaNftUrlTemplate
 
 const etherscanNftUrlTemplate = {
   mainnet: 'https://etherscan.io/nft/%',
-  goerli: 'https://goerli.etherscan.io/nft/%'
+  sepolia: 'https://sepolia.etherscan.io/nft/%',
+  'base-sepolia': 'https://sepolia.basescan.org/nft/%',
+  base: 'https://basescan.org/nft/%'
 }
 
 const etherscanCollectionUrlTemplate = {
   mainnet: 'https://etherscan.io/token/%#inventory',
-  goerli: 'https://goerli.etherscan.io/token/%'
+  sepolia: 'https://sepolia.etherscan.io/token/%',
+  'base-sepolia': 'https://sepolia.basescan.org/token/%',
+  base: 'https://basescan.org/token/%#inventory'
 }
 
 async function _expandURItoMetadata(uri) {
@@ -109,17 +129,19 @@ export async function getNft(address, tokenId, network = 'mainnet') {
     collectionSupportsStories(address, network)
   ])
 
-  const error = nftData.error ? nftData.error : nftData.metadataError
+  const error = nftData.raw.error
   if (error) {
     switch (error) {
       case 'Contract does not have any code':
         throw new Error('Contract not found')
+      case 'Failed to get token uri':
+        break
       default:
         console.log(`Unknown NFT alchemy error: ${error}`)
     }
   }
 
-  if (nftData.metadataError) {
+  if (error === 'Failed to get token uri') {
     const rawJson = await _fetchMetadataFromContract(
       address,
       tokenId,
@@ -127,29 +149,19 @@ export async function getNft(address, tokenId, network = 'mainnet') {
     ).catch((error) => {
       throw new Error('Unknown error fetching NFT metadata')
     })
-    nftData.title = rawJson.name
+    nftData.name = rawJson.name
     nftData.description = rawJson.description
-    nftData.media[0] = {
-      format: 'image', //todo: support more on this raw workaround?
-      gateway: rawJson.image
-    }
-  }
-
-  if (
-    !nftData.media[0].format &&
-    nftData.media[0].gateway &&
-    nftData.media[0].gateway.startsWith('data:image/svg+xml')
-  ) {
-    nftData.media[0].format = 'svg+xml'
+    nftData.image.cachedUrl = rawJson.image
+    nftData.raw.metadata.external_url = rawJson.external_url
   }
 
   const nft = {
-    title: nftData.title,
+    name: nftData.name,
     description: nftData.description,
     tokenId: nftData.tokenId,
     tokenType: nftData.tokenType,
-    externalUrl: nftData.rawMetadata.external_url,
-    owners: nftOwners.owners,
+    externalUrl: nftData.raw.metadata.external_url,
+    owners: nftOwners.owners.map((address) => address.toLowerCase()),
     openseaUrl: openseaNftUrlTemplate[network].replace(
       '%',
       `${nftData.contract.address}/${nftData.tokenId}`
@@ -157,45 +169,33 @@ export async function getNft(address, tokenId, network = 'mainnet') {
     etherscanUrl: etherscanNftUrlTemplate[network].replace(
       '%',
       `${nftData.contract.address}/${nftData.tokenId}`
-    )
+    ),
+    media: {
+      type: 'image',
+      data: nftData.image.cachedUrl
+    }
   }
 
-  const rawMedia = nftData.media[0]
-  switch (rawMedia.format) {
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'image':
-    case 'gif':
-    case 'svg+xml':
-      nft.media = {
-        type: 'image',
-        data: rawMedia.gateway
-      }
-      break
-    default:
-      throw new Error(`Media type ${rawMedia.format} is not supported yet`)
-  }
-
-  if (nftData?.rawMetadata?.animation_url) {
-    if (nftData.rawMetadata.animation_url.endsWith('mp4')) {
+  if (nftData?.raw?.metadata?.animation_url) {
+    if (nftData.raw.metadata.animation_url.endsWith('mp4')) {
       nft.media = {
         type: 'video',
-        data: nftData.rawMetadata.animation_url.replace(
+        data: nftData.raw.metadata.animation_url.replace(
           'ipfs://',
           'https://ipfs.io/ipfs/'
         )
       }
     }
   }
+
   nft.collection = {
     address: nftData.contract.address,
-    name: nftData?.contract?.openSea?.collectionName
-      ? nftData.contract.openSea.collectionName
+    name: nftData?.contract?.openSeaMetadata?.collectionName
+      ? nftData.contract.openSeaMetadata.collectionName
       : nftData.contract.name
       ? nftData.contract.name
       : nftData.contract.symbol,
-    imageUrl: nftData.contract.openSea.imageUrl,
+    imageUrl: nftData.contract.openSeaMetadata.imageUrl,
     tokenType: nftData.contract.tokenType,
     deployedBlock: nftData.contract.deployedBlockNumber,
     supportsStories,
@@ -248,7 +248,15 @@ async function _collectionSupportsInterface(
 }
 
 export async function collectionSupportsStories(address, network = 'mainnet') {
-  return _collectionSupportsInterface(address, '0x0d23ecb9', network).catch(
+  if (
+    _collectionSupportsInterface(address, '0x0d23ecb9', network).catch(
+      (error) => false
+    )
+  ) {
+    return true
+  }
+
+  return _collectionSupportsInterface(address, '0x2464f17b', network).catch(
     (error) => false
   )
 }
@@ -262,12 +270,27 @@ export async function getNftStories(
   const tokenIdHash = tokenId
     ? Utils.hexZeroPad(Utils.hexlify(parseInt(tokenId)), 32)
     : null
-  const logs = await rawAlchemy[network].core.getLogs({
+  let logs = await rawAlchemy[network].core.getLogs({
     address,
-    fromBlock: deployedBlock,
+    fromBlock: deployedBlock ? deployedBlock : 'earliest',
     toBlock: 'latest',
-    topics: [[CREATOR_STORY_TOPIC, OWNER_STORY_TOPIC], tokenIdHash]
+    topics: [
+      [CREATOR_STORY_TOPIC, OWNER_STORY_TOPIC, COLLECTION_STORY_TOPIC],
+      tokenIdHash
+    ]
   })
+
+  const collectionLogs = logs
+    .filter((log) => log.topics[0] === COLLECTION_STORY_TOPIC)
+    .sort((a, b) => b.blockNumber - a.blockNumber)
+  const nftLogs = logs
+    .filter((log) => log.topics[0] !== COLLECTION_STORY_TOPIC)
+    .sort((a, b) => b.blockNumber - a.blockNumber)
+  logs = collectionLogs.concat(nftLogs)
+  if (tokenId === null && logs.length > 30) {
+    logs = logs.slice(0, 30)
+  }
+
   const blockNumbers = [...new Set(logs.map((log) => log.blockNumber))]
   const blockTimes = {}
   await Promise.all(
@@ -283,12 +306,23 @@ export async function getNftStories(
       rawLog.data
     )
     return {
-      tokenId: parseInt(rawLog.topics[1], 16),
-      address: Utils.hexValue(rawLog.topics[2]),
+      tokenId:
+        rawLog.topics[0] === COLLECTION_STORY_TOPIC
+          ? undefined
+          : parseInt(rawLog.topics[1], 16),
+      address:
+        rawLog.topics[0] === COLLECTION_STORY_TOPIC
+          ? Utils.hexValue(rawLog.topics[1])
+          : Utils.hexValue(rawLog.topics[2]),
       blockNumber: rawLog.blockNumber,
       name: decodedData[0],
       text: decodedData[1],
-      type: rawLog.topics[0] === CREATOR_STORY_TOPIC ? 'creator' : 'owner',
+      type:
+        rawLog.topics[0] === COLLECTION_STORY_TOPIC
+          ? 'collection'
+          : CREATOR_STORY_TOPIC
+          ? 'creator'
+          : 'owner',
       timestamp: blockTimes[rawLog.blockNumber],
       transactionHash: rawLog.transactionHash,
       explorerUrl: explorerUrlTransactionLogTemplate[network].replace(
@@ -302,7 +336,7 @@ export async function getNftStories(
     }
   })
 
-  return standardlogs.sort((a, b) => b.timestamp - a.timestamp)
+  return standardlogs
 }
 
 export async function getCollectionStories(
@@ -314,7 +348,11 @@ export async function getCollectionStories(
   if (stories.length > 30) {
     stories = stories.slice(0, 30)
   }
-  const tokenIds = [...new Set(stories.map((story) => story.tokenId))]
+  const tokenIds = [
+    ...new Set(
+      stories.filter((story) => story.tokenId).map((story) => story.tokenId)
+    )
+  ]
 
   const [nftsData, ownersData] = await Promise.all([
     rawAlchemy[network].nft.getNftMetadataBatch(
@@ -331,19 +369,19 @@ export async function getCollectionStories(
   ownersData.owners.forEach((owner) => {
     const address = owner.ownerAddress
     owner.tokenBalances.forEach((balance) => {
-      const tokenId = parseInt(balance.tokenId, 16)
+      const tokenId = parseInt(balance.tokenId)
       if (ownersByTokenId[tokenId]) {
-        ownersByTokenId[tokenId].push(address)
+        ownersByTokenId[tokenId].push(address.toLowerCase())
       } else {
-        ownersByTokenId[tokenId] = [address]
+        ownersByTokenId[tokenId] = [address.toLowerCase()]
       }
     })
   })
 
   const nftByTokenId = {}
-  nftsData.forEach((data) => {
+  nftsData.nfts.forEach((data) => {
     nftByTokenId[data.tokenId] = {
-      title: data.title,
+      name: data.name,
       tokenId: data.tokenId,
       owners: ownersByTokenId[data.tokenId],
       nftPath:
@@ -352,31 +390,21 @@ export async function getCollectionStories(
           : `/${network}/${address}/${data.tokenId}`
     }
 
-    if (
-      data.media[0] &&
-      !data.media[0].format &&
-      data.media[0].gateway &&
-      data.media[0].gateway.startsWith('data:image/svg+xml')
-    ) {
-      data.media[0].format = 'svg+xml'
+    nftByTokenId[data.tokenId].media = {
+      type: 'image',
+      data: data.image.thumbnailUrl
     }
 
-    const rawMedia = data.media[0]
-    if (rawMedia && rawMedia.format) {
-      switch (rawMedia.format) {
-        case 'png':
-        case 'jpg':
-        case 'jpeg':
-        case 'image':
-        case 'gif':
-        case 'svg+xml':
-          nftByTokenId[data.tokenId].media = {
-            type: 'image',
-            data: rawMedia.gateway
-          }
-          break
-        default:
-          throw new Error(`Media type ${rawMedia.format} is not supported yet`)
+    /**
+     * This is an ugly hack for Treeangles. The problem is that the data URI is too
+     * long for Alchemy to process. Instead of raw calling the contract for every single
+     * NFT (like we do for the NftView) this was a quick fix. Needs to be addressed in
+     * the future.
+     */
+    if (address.toLowerCase() == '0x8e7b93896242299defc4860f3c093dc3ebf90a96') {
+      nftByTokenId[data.tokenId].media = {
+        type: 'image',
+        data: `https://cdn.nix.art/treeangles-png/${data.tokenId}.png`
       }
     }
   })
@@ -396,7 +424,6 @@ export async function getCollection(address, network = 'mainnet') {
   if (data.tokenType === 'NOT_A_CONTRACT' || data.tokenType == 'UNKNOWN') {
     throw new Error('Contract not found')
   }
-
   return {
     address: data.address,
     name: data?.openSea?.collectionName
